@@ -3,6 +3,7 @@
 namespace Drupal\qna\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Provides a 'CreateAnswerBlock' block.
@@ -20,7 +21,17 @@ class CreateAnswerBlock extends BlockBase {
    */
   public function build() {
     $build = [];
-    $build['create_answer_block']['#markup'] = 'Implement CreateAnswerBlock.';
+
+    // Keep anonymous users from answering
+    $user = \Drupal::currentUser();
+    if ($user->isAnonymous()) {
+      $build = [
+        '#markup' => '<p>You must log in to provide answers.</p>',
+      ];
+    }
+    else {
+      $build = \Drupal::formBuilder()->getForm('Drupal\qna\Form\CreateAnswerForm');
+    }
 
     return $build;
   }

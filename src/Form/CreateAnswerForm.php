@@ -36,7 +36,7 @@ class CreateAnswerForm extends FormBase {
     );
     $form['add_answer'] = array(
       '#type' => 'submit',
-      '#title' => $this->t('Add answer'),
+      '#value' => $this->t('Add answer'),
     );
 
     return $form;
@@ -55,23 +55,27 @@ class CreateAnswerForm extends FormBase {
     }
 
     // Add the new answer.
-    $node = Node::create(array(
+    $answer = Node::create(array(
       'type' => 'answer',
-      'title' => $form_state->getValue('title'),
+      'title' => $form_state->getValue('answer'),
       'body' => [
         'value' => $form_state->getValue('details'),
       ],
       'uid' => $user->id(),
       'status' => NODE_PUBLISHED,
     ));
-    $node->save();
+    $answer->save();
 
     // TODO: Add the entity reference to the parent question.
-//    if ($node->id()) {
-//      $node->get('field_translations')->appendItem($translation->id());
-//      $node->save();
-//      drupal_set_message(t("Thank you for your contribution."), 'status');
-//    }
+    if ($answer->id()) {
+      $question = \Drupal::routeMatch()->getParameter('node');
+      if ($question->id()) {
+        $question->get('field_answers')->appendItem($answer->id());
+        $question->save();
+        drupal_set_message(t("Thank you for your contribution."), 'status');
+      }
+    }
+
   }
 
 }
